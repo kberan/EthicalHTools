@@ -1,0 +1,15 @@
+
+As mentioned earlier in the Python compatibility lectures, we can convert a byte-object to a string by casting it to a string OR using the .decode method. So changing the above statement to ANY of the following will fix this problem
+
+if "www.bing.com" in qname.decode():
+
+if "www.bing.com" in str(qname):
+
+Identify and fix the second line that prevents this code from running with Python 3.
+
+The 2nd problem is in the set_payload method, in Python 3 it expects a bytes object but our code gives it a string because of the use of str().
+
+
+Again this is pretty straight forward, because set_payload() expects a bytes-object all we have to do is convert scapy_packet to a bytes object, we can easily do that by replacing the str() cast to a bytes() cast. So just replace the highlighted line with
+
+packett.set_payload(bytes(scapy_packet))

@@ -1,0 +1,97 @@
+Kali
+us:root
+pas:toor
+
+WIN
+Passw0rd!
+
+TO RUN PYTHON /opt/pycharm-community-2018.X.X/bin  ./pycharm.sh
+TO RUN PYTHON SCRIPT python <name of script>
+#!/usr/bin/env python 
+
+TO USE ANY MODULE (subprocess, optparser, re) you have to inport it first
+<module>.<functions>
+
+
+NOTES
+Function INPUT is Python 3 function ( have to run the script as "python3 mac_changer.py")
+raw_input -2.7 vs input 3
+
+OTHER NOTES
+scapy-does come pre-installed in pythin2.7 but not in python 3 so need to install it on the box
+
+LINUX:
+;<command>; - in terminal it tells linux to execute another command after current command
+
+
+ifconfig-list all interfaces on the computer, network card
+and information about the interfaces, if connected to netwrok it will have ip net mask and mac address of the interfaces
+ether is the mac address
+ifconfig eth0(name  of the interface)
+\
+1)ifconfig eth0 down  ....this disables the interface
+2)ifconfig eth0 hw ether <new mac> e.g. 00:11:22:33:44:55(12 car)
+3)ifconfig eth0 up ....enable the interface again
+
+
+Python - SUBprocess
+can execute any system commands 
+subprocess.call
+subprocess -module
+call-function
+call will not execute anything else until the command finishes executing
+subprocess.all(<command>,Shell=True)
+
+#!/usr/bin env python3
+
+import subprocess
+
+subprocess.call("ifconfig",shell=True)
+
+
+https://www.udemy.com/course/learn-python-and-ethical-hacking-from-scratch/learn/lecture/9194744#overview
+
+OPTPARSE 
+import optparse - gets arguments from the user and lets us use them in out code
+parser=optparse.OptionParser... this becomes a object that can handle user input
+optparse.OptionParser() -- eveyrhing starting with CApital letter if a class - it determins what we can do with the object. all options are stored in the class. 
+parser = .... is object and it will inherit all the properties from its class, but we need to input arguments.  like parser. add_option
+...options to add to parser object (parser.add_option())
+parser.parse_args ... allows python to understand what the user has entered and handles it. It returns arguments the user entered to a variable, (it will separate arguments and values based ont he format like arguments --interface, and values eth0)
+to capture those we will need variables and it will return two sets of information.
+(options, arguments) = parser.parse_args() .. this will get the rifht data to right variables
+
+ARP Spoofing
+arp -a shows router ip and router mac address - any request to the internet will go trough that gateway and to that mac address that is associated to the router
+We can direct the router and the host trafic to own pc. Update ARP table for the acces point and associate the IP with the wrog mac address. 
+
+When its done you need to enable port forwarding so that the traffic can reach the router without being dropped
+to enable echo 1 > /proc/sys/net/ipv4/ip_forward
+
+SCAPY and CHECKING ON ANY OPTIONS FOR A FUNCTION of a CLASS
+open python interpreter by typing  "python"
+then import the module e.g. import scapy.all as scapy
+then scapy.ls(<funciton> like scapy.ARP) this will list all options for that class
+then type exit()
+
+when op is (1) its a requst when its (2) its response
+
+
+
+COMMANDS
+subprocess.call(["ls","-1",<variable>]) - a list of elements instead a whole string, Python now knows they are all part on same command now. 
+ifconfig
+route-n  get info of the router 
+
+PYCHARM
+CTRL+D - Duplicate current line
+
+GENERAL PYTHON
+when wanting to do dynamic printing: Pythion automatically appends /n -new line on a print statement
+print(), will stop that...this will print once exiting
+sys.stdout.flush()...this tells pythioon stsadard output instantly and not put it in buffer. 
+print("\r[+] Packets sent ...\r dont print from where you are now print at the start of the line
+print("\r[+] Packets sent: " + str(sent_packets_count), end="") for python3
+
+
+

@@ -1,0 +1,3 @@
+intalling modules to Python
+linux: pip install <module name> 
+modules for python 3 you have to use pip3 e.g. pip3 install scapy-python3

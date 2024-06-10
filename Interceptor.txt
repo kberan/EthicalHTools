@@ -1,0 +1,52 @@
+Linux :
+THIs will disable the internet. We need to let Kali work as a router an enabel the packets to flow through to the internet
+enable ip forwarding echo 1 > /proc/sys/net/ipv4/ip_forward
+THIs will disable the internet. We need to let Kali work as a router an enabel the packets to flow through to the internet
+enable ip forwarding echo 1 > /proc/sys/net/ipv4/ip_forward
+
+IPTABLES - modifying routing rules
+iptables -I  FORWARD  -j NFQUEUE (specify chain we want to modify e.g. forward - packet which come to our computer
+net filter queue   and specify queue in which will trap the packets in
+iptables -I FORWARD -j NFQUEUE --queue-num 0
+--trap all requests packet from target machinee that usually go to the forward chain...in netfilter queue and queue number 0 
+Request-> man in middle trapping request in queue --> forwarding request
+
+--Testing on OWN PC--
+iptables -I OUTPUT -j NFQUEUE --queue-num 0
+-OUTPUT chain for packet leaving my computer....for testing on own machine 
+iptables -I INPUT -j NFQUEUE --queue-num 0
+--INPUT packets coming to my computer for testing on own computer directing packets to the queue
+
+
+iptables -- flush  ( to delete ip tables that were created.whats in the tables)
+
+next we need to access the queue from python 
+pip install netfilterqueue
+
+
+queue = netfilterqueue.NetfilterQueue()
+-creating instance of the netfilter ueue object 
+
+queue.bind(0, process_packet)
+--connecting the queue with the object "0"
+--process packet is a callback function that will be executed on each packet in the queue
+--------------------------------------------------------------------
+#!/usr/bin/env python
+import netfilterqueue
+
+
+def process_packet(packet):
+    print(packet)
+    packet.accept()
+
+queue = netfilterqueue.NetfilterQueue()
+queue.bind(0, process_packet)
+queue.run()
+
+this will run and intercept the packages but unless you put packet.accept the target will not be abel to access internet because app packets/requests are in our queue "0"
+
+  packet.drop() - will drop the package and will not allow it to reach the destination(router)
+  -------------------------------------------------------------------------
+  
+  
+  
